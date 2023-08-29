@@ -1,0 +1,11 @@
+﻿{
+  "solution": {
+    "path": "osu1progressbar.sln",
+    "projects": [
+      "osu1progressbar.Desktop\\osu1progressbar.Desktop.csproj",
+      "osu1progressbar.Game\\osu1progressbar.Game.csproj",
+      "osu1progressbar.Game.Tests\\osu1progressbar.Game.Tests.csproj",
+      "osu1progressbar.Resources\\osu1progressbar.Resources.csproj"
+    ]
+  }
+}
