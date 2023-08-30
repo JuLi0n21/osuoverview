@@ -29,6 +29,8 @@ using osuTK.Graphics;
     "Hp": 5.5,
     "Od": 8.0,
     "Status": 4
+
+give box a max size as to not draw over the entire screen when shit goes japanese;
 */
 
 namespace osu1progressbar.Game.MemoryProvider.Elements
@@ -65,24 +67,25 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
             InternalChild = new Container
             {
                 AutoSizeAxes = Axes.Both,
-                Anchor = Anchor.TopCentre,
+                Anchor = Anchor.TopLeft,
                 Origin = Anchor.TopLeft,
-                //Masking = true,
+                Masking = true,
                 Children = new Drawable[]
                 {
                     new Box
                     {
-                        Colour = Color4.Brown,
+                        Colour = Color4.SteelBlue,
                         RelativeSizeAxes = Axes.Both,
+                        
                     },
+                    new SpriteText { Text = "Beatmap:", Colour = Color4.Goldenrod },
                     SetidSpriteText = new SpriteText
                     {
-                    Y = offset ,
+                    Y = offset += offsetdistance,
                     Anchor = Anchor.TopLeft,
                     Origin = Anchor.TopLeft,
                     Font = FontUsage.Default.With(size: 20),
-                    Text = "Setid: ",
-                    Colour = Color4.Blue,
+                    Text = "Setid: "
                     },
                     MapstringSpriteText = new SpriteText
                     {
