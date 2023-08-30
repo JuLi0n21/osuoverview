@@ -28,13 +28,10 @@ namespace osu1progressbar.Game
                     Origin = Anchor.TopCentre,
                     Font = FontUsage.Default.With(size: 40)
                 },
-                new SpinningBox
-                {
-                    Anchor = Anchor.Centre,
-                },
                 new MemoryText
                 {
-                    Anchor = Anchor.Centre,
+                    Anchor = Anchor.TopCentre,
+                    Origin = Anchor.TopCentre,
                 }
             };
         }

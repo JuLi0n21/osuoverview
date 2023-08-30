@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Protocol;
+using osu.Framework.Bindables;
 using osu.Framework.Logging;
 using OsuMemoryDataProvider;
 using OsuMemoryDataProvider.OsuMemoryModels;
@@ -22,13 +23,13 @@ namespace osu1progressbar.Game.MemoryProvider
     internal class OsuMemoryProvider
     {
         private readonly string _osuWindowTitle;
-        private int _readDelay = 33;
+        public int ReadDelay { get; set; } = 200;
         private readonly object _minMaxLock = new object();
         private double _memoryReadTimeMin = double.PositiveInfinity;
         private double _memoryReadTimeMax = double.NegativeInfinity;
 
-        private OsuBaseAddresses baseAddresses = new OsuBaseAddresses();
-
+        private OsuBaseAddresses baseAddresses;
+        public Bindable<OsuBaseAddresses> OsuBaseAddressesBindable { get; }
 
 
         private readonly StructuredOsuMemoryReader _sreader;
@@ -37,7 +38,9 @@ namespace osu1progressbar.Game.MemoryProvider
         public OsuMemoryProvider(string osuWindowTitle)
         {
             _sreader = StructuredOsuMemoryReader.Instance.GetInstanceForWindowTitleHint(osuWindowTitle);
-            Logger.Log(_sreader.BaseAddresses.Values.ToString());   
+            baseAddresses = new OsuBaseAddresses();
+            OsuBaseAddressesBindable = new Bindable<OsuBaseAddresses>(baseAddresses);
+            Logger.Log("Starting OsuMemoryProvider...");   
         }
 
 
@@ -85,7 +88,7 @@ namespace osu1progressbar.Game.MemoryProvider
                 double readTimeMs, readTimeMsMin, readTimeMsMax;
                 _sreader.WithTimes = true;
                 var readUsingProperty = false;
-                var baseAddresses = new OsuBaseAddresses();
+                //var baseAddresses = new OsuBaseAddresses();
                 while (true)
                 {
                    
@@ -93,69 +96,68 @@ namespace osu1progressbar.Game.MemoryProvider
 
                     if (!_sreader.CanRead)
                     {
-                       // canread = false;
 
                         Logger.Log("osu! process not found");
-                        await Task.Delay(_readDelay);
+                        await Task.Delay(ReadDelay);
                         continue;
                     }
 
                     stopwatch = Stopwatch.StartNew();
                     if (readUsingProperty)
                     {
-                        baseAddresses.Beatmap.Id = ReadInt(baseAddresses.Beatmap, nameof(CurrentBeatmap.Id));
-                        baseAddresses.Beatmap.SetId = ReadInt(baseAddresses.Beatmap, nameof(CurrentBeatmap.SetId));
-                        baseAddresses.Beatmap.MapString = ReadString(baseAddresses.Beatmap, nameof(CurrentBeatmap.MapString));
-                        baseAddresses.Beatmap.FolderName = ReadString(baseAddresses.Beatmap, nameof(CurrentBeatmap.FolderName));
-                        baseAddresses.Beatmap.OsuFileName = ReadString(baseAddresses.Beatmap, nameof(CurrentBeatmap.OsuFileName));
-                        baseAddresses.Beatmap.Md5 = ReadString(baseAddresses.Beatmap, nameof(CurrentBeatmap.Md5));
-                        baseAddresses.Beatmap.Ar = ReadFloat(baseAddresses.Beatmap, nameof(CurrentBeatmap.Ar));
-                        baseAddresses.Beatmap.Cs = ReadFloat(baseAddresses.Beatmap, nameof(CurrentBeatmap.Cs));
-                        baseAddresses.Beatmap.Hp = ReadFloat(baseAddresses.Beatmap, nameof(CurrentBeatmap.Hp));
-                        baseAddresses.Beatmap.Od = ReadFloat(baseAddresses.Beatmap, nameof(CurrentBeatmap.Od));
-                        baseAddresses.Beatmap.Status = ReadShort(baseAddresses.Beatmap, nameof(CurrentBeatmap.Status));
-                        baseAddresses.Skin.Folder = ReadString(baseAddresses.Skin, nameof(Skin.Folder));
-                        baseAddresses.GeneralData.RawStatus = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.RawStatus));
-                        baseAddresses.GeneralData.GameMode = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.GameMode));
-                        baseAddresses.GeneralData.Retries = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.Retries));
-                        baseAddresses.GeneralData.AudioTime = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.AudioTime));
-                        baseAddresses.GeneralData.Mods = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.Mods));
+                        OsuBaseAddressesBindable.Value.Beatmap.Id = ReadInt(baseAddresses.Beatmap, nameof(CurrentBeatmap.Id));
+                        OsuBaseAddressesBindable.Value.Beatmap.SetId = ReadInt(baseAddresses.Beatmap, nameof(CurrentBeatmap.SetId));
+                        OsuBaseAddressesBindable.Value.Beatmap.MapString = ReadString(baseAddresses.Beatmap, nameof(CurrentBeatmap.MapString));
+                        OsuBaseAddressesBindable.Value.Beatmap.FolderName = ReadString(baseAddresses.Beatmap, nameof(CurrentBeatmap.FolderName));
+                        OsuBaseAddressesBindable.Value.Beatmap.OsuFileName = ReadString(baseAddresses.Beatmap, nameof(CurrentBeatmap.OsuFileName));
+                        OsuBaseAddressesBindable.Value.Beatmap.Md5 = ReadString(baseAddresses.Beatmap, nameof(CurrentBeatmap.Md5));
+                        OsuBaseAddressesBindable.Value.Beatmap.Ar = ReadFloat(baseAddresses.Beatmap, nameof(CurrentBeatmap.Ar));
+                        OsuBaseAddressesBindable.Value.Beatmap.Cs = ReadFloat(baseAddresses.Beatmap, nameof(CurrentBeatmap.Cs));
+                        OsuBaseAddressesBindable.Value.Beatmap.Hp = ReadFloat(baseAddresses.Beatmap, nameof(CurrentBeatmap.Hp));
+                        OsuBaseAddressesBindable.Value.Beatmap.Od = ReadFloat(baseAddresses.Beatmap, nameof(CurrentBeatmap.Od));
+                        OsuBaseAddressesBindable.Value.Beatmap.Status = ReadShort(baseAddresses.Beatmap, nameof(CurrentBeatmap.Status));
+                        OsuBaseAddressesBindable.Value.Skin.Folder = ReadString(baseAddresses.Skin, nameof(Skin.Folder));
+                        OsuBaseAddressesBindable.Value.GeneralData.RawStatus = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.RawStatus));
+                        OsuBaseAddressesBindable.Value.GeneralData.GameMode = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.GameMode));
+                        OsuBaseAddressesBindable.Value.GeneralData.Retries = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.Retries));
+                        OsuBaseAddressesBindable.Value.GeneralData.AudioTime = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.AudioTime));
+                        OsuBaseAddressesBindable.Value.GeneralData.Mods = ReadInt(baseAddresses.GeneralData, nameof(GeneralData.Mods));
                         Logger.Log(JsonConvert.SerializeObject(baseAddresses, Formatting.Indented));
                     }
                     else
                     {
-                        _sreader.TryRead(baseAddresses.Beatmap);
-                        _sreader.TryRead(baseAddresses.Skin);
-                        _sreader.TryRead(baseAddresses.GeneralData);
-                        _sreader.TryRead(baseAddresses.BanchoUser);
+                        _sreader.TryRead(OsuBaseAddressesBindable.Value.Beatmap);
+                        _sreader.TryRead(OsuBaseAddressesBindable.Value.Skin);
+                        _sreader.TryRead(OsuBaseAddressesBindable.Value.GeneralData);
+                        _sreader.TryRead(OsuBaseAddressesBindable.Value.BanchoUser);
                     }
 
-                    if (baseAddresses.GeneralData.OsuStatus == OsuMemoryStatus.SongSelect)
-                        _sreader.TryRead(baseAddresses.SongSelectionScores);
+                    if (OsuBaseAddressesBindable.Value.GeneralData.OsuStatus == OsuMemoryStatus.SongSelect)
+                        _sreader.TryRead(OsuBaseAddressesBindable.Value.SongSelectionScores);
                     else
-                        baseAddresses.SongSelectionScores.Scores.Clear();
+                        OsuBaseAddressesBindable.Value.SongSelectionScores.Scores.Clear();
 
-                    if (baseAddresses.GeneralData.OsuStatus == OsuMemoryStatus.ResultsScreen)
-                        _sreader.TryRead(baseAddresses.ResultsScreen);
+                    if (OsuBaseAddressesBindable.Value.GeneralData.OsuStatus == OsuMemoryStatus.ResultsScreen)
+                        _sreader.TryRead(OsuBaseAddressesBindable.Value.ResultsScreen);
 
-                    if (baseAddresses.GeneralData.OsuStatus == OsuMemoryStatus.Playing)
+                    if (OsuBaseAddressesBindable.Value.GeneralData.OsuStatus == OsuMemoryStatus.Playing)
                     {
-                        _sreader.TryRead(baseAddresses.Player);
+                        _sreader.TryRead(OsuBaseAddressesBindable.Value.Player);
                         //TODO: flag needed for single/multi player detection (should be read once per play in singleplayer)
-                        _sreader.TryRead(baseAddresses.LeaderBoard);
-                        _sreader.TryRead(baseAddresses.KeyOverlay);
+                        _sreader.TryRead(OsuBaseAddressesBindable.Value.LeaderBoard);
+                        _sreader.TryRead(OsuBaseAddressesBindable.Value.KeyOverlay);
                         if (readUsingProperty)
                         {
                             //Testing reading of reference types(other than string)
-                            _sreader.TryReadProperty(baseAddresses.Player, nameof(Player.Mods), out var dummyResult);
+                            _sreader.TryReadProperty(OsuBaseAddressesBindable.Value.Player, nameof(Player.Mods), out var dummyResult);
                         }
                     }
                     else
                     {
-                        baseAddresses.LeaderBoard.Players.Clear();
+                        OsuBaseAddressesBindable.Value.LeaderBoard.Players.Clear();
                     }
 
-                    var hitErrors = baseAddresses.Player?.HitErrors;
+                    var hitErrors = OsuBaseAddressesBindable.Value.Player?.HitErrors;
                     if (hitErrors != null)
                     {
                         var hitErrorsCount = hitErrors.Count;
@@ -174,9 +176,10 @@ namespace osu1progressbar.Game.MemoryProvider
                         readTimeMsMax = _memoryReadTimeMax;
                     }
 
+                    OsuBaseAddressesBindable.TriggerChange();
                     Logger.Log(JsonConvert.SerializeObject(baseAddresses, Formatting.Indented));
                     _sreader.ReadTimes.Clear();
-                    await Task.Delay(_readDelay);
+                    await Task.Delay(ReadDelay);
                 }
             }, cts.Token);
         }
@@ -193,9 +196,9 @@ namespace osu1progressbar.Game.MemoryProvider
             }
         }
 
-        public string GetJsonData()
+        public string GetAllDataJson()
         {
-           // if(!_sreader.CanRead) return "Osu not Found!";
+            if(!_sreader.CanRead) return "Osu not Found!";
 
             return JsonConvert.SerializeObject(baseAddresses, Formatting.Indented);
         }
