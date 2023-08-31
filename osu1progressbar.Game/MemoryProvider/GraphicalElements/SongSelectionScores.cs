@@ -17,49 +17,30 @@ using OsuMemoryDataProvider;
 using OsuMemoryDataProvider.OsuMemoryModels;
 using osuTK.Graphics;
 
-/*
-     "Player": {
-    "HPSmooth": 0.0,
-    "HP": 0.0,
-    "Accuracy": 0.0,
-    "HitErrors": null,
-    "IsReplay": false,
-    "Username": null,
-    "Mods": {
-      "ModsXor1": 0,
-      "ModsXor2": 0,
-      "Value": 0
-    },
-    "Mode": 0,
-    "MaxCombo": 0,
-    "Score": 0,
-    "ScoreV2": 0,
-    "Hit100": 0,
-    "Hit300": 0,
-    "Hit50": 0,
-    "HitGeki": 0,
-    "HitKatu": 0,
-    "HitMiss": 0,
-    "Combo": 0
-  },
+/*  "SongSelectionScores": {
+    "RankingType": 0,
+    "TotalScores": 0,
+    "MainPlayerScore": null,
+    "AmountOfScores": null,
+    "Scores": []
 */
 
 //AUTO GENERATED WITH CHAT GPT!!!
 namespace osu1progressbar.Game.MemoryProvider.Elements
 {
-    partial class Player : CompositeDrawable
+    partial class SongSelectionScores: CompositeDrawable
     {
-        public SpriteText HPSmoothSpriteText { get; private set; }
-        public SpriteText HPSpriteText { get; private set; }
-        public SpriteText AccuracySpriteText { get; private set; }
-        public SpriteText MaxComboSpriteText { get; private set; }
-        public SpriteText ScoreSpriteText { get; private set; }
-        public SpriteText ComboSpriteText { get; private set; }
+        public SpriteText RankingTypeSpriteText { get; private set; }
+        public SpriteText TotalScoresSpriteText { get; private set; }
+        public SpriteText AmountOfScoresSpriteText { get; private set; }
+
+        public SpriteText MainPlayerScoreSpriteText { get; private set; }
+        public SpriteText ScoresSpriteText { get; private set; }
 
         private int offset = 0;
         private int offsetdistance = 15;
 
-        public Player()
+        public SongSelectionScores()
         {
         }
 
@@ -79,39 +60,34 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                     Colour = Color4.SteelBlue,
                     RelativeSizeAxes = Axes.Both,
                 },
-                new SpriteText { Text = "Player:", Colour = Color4.Goldenrod },
-                HPSmoothSpriteText = new SpriteText
+                new SpriteText { Text = "SongSelectionScores:", Colour = Color4.Goldenrod },
+                RankingTypeSpriteText = new SpriteText
                 {
                     Y = offset += offsetdistance,
                     Anchor = Anchor.TopLeft,
                     Origin = Anchor.TopLeft,
                     Font = FontUsage.Default.With(size: 20),
-                    Text = "HPSmooth: "
+                    Text = "RankingType: "
                 },
-                HPSpriteText = new SpriteText
+                TotalScoresSpriteText = new SpriteText
                 {
                     Y = offset += offsetdistance,
-                    Text = "HP: ",
+                    Text = "TotalScores: ",
                 },
-                AccuracySpriteText = new SpriteText
+                AmountOfScoresSpriteText = new SpriteText
                 {
                     Y = offset += offsetdistance,
-                    Text = "Accuracy: ",
+                    Text = "AmountOfScores: ",
                 },
-                MaxComboSpriteText = new SpriteText
+                 MainPlayerScoreSpriteText = new SpriteText
                 {
                     Y = offset += offsetdistance,
-                    Text = "MaxCombo: ",
+                    Text = "MainPlayerScore: ",
                 },
-                ScoreSpriteText = new SpriteText
+                ScoresSpriteText = new SpriteText //is representated as an array rethink some other time TEHEE
                 {
-                    Y = offset += offsetdistance,
-                    Text = "Score: ",
-                },
-                ComboSpriteText = new SpriteText
-                {
-                    Y = offset += offsetdistance,
-                    Text = "Combo: ",
+                       Y = offset += offsetdistance,
+                       Text = "Scores: "
                 },
                 }
             };

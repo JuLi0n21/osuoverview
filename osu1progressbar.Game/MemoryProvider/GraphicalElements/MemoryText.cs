@@ -68,7 +68,7 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                 {
                     beatmap = new Beatmap()
                     {
-                        Y = 600,
+                        Y = 500,
                       Anchor = Anchor.TopLeft,
                       Origin = Anchor.TopLeft,
                     },
@@ -95,30 +95,30 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                     },
                     leaderBoard = new LeaderBoard()
                     {
-                         X = 300,
+                        X = 300,
                         Anchor = Anchor.TopLeft,
                         Origin = Anchor.TopLeft,
                     },
                     player = new Player() {
-                        X = 300,
+                         X = 400,
                          Y = 100,
                         Anchor = Anchor.TopLeft,
                         Origin = Anchor.TopLeft,
                     },
                     resultsScreen   = new ResultsScreen() {
-                        X = 300,
-                         Y = 300,
+                         X = 300,
+                         Y = 400,
                         Anchor = Anchor.TopLeft,
                         Origin = Anchor.TopLeft,
                     },
                     skin    = new Skin() {
-                        X = 300,
+                         X = 300,
                          Y = 250,
                         Anchor = Anchor.TopLeft,
                         Origin = Anchor.TopLeft,
                     },
                     songSelectionScores = new SongSelectionScores() {
-                        X = 600,
+                         X = 600,
                          Y = 0,
                         Anchor = Anchor.TopLeft,
                         Origin = Anchor.TopLeft,
@@ -131,12 +131,10 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
         private void updateText()
         {
 
-            // Consider updating freqently changing parts in a seperate call to not do uselesss shit mulitple times.
+            // Consider updating freqently changing parts in a seperate call to not do uselesss shit mulitple times. or idk maybe
 
-            // SOME ARE MISSING WHY U STUPID BOT
-
-            
-            beatmap.SetidSpriteText.Text = "Setid: " + OsuBaseAddressesBindable.Value.Beatmap.MapString;
+            beatmap.IdSpriteText.Text = "Id: " + OsuBaseAddressesBindable.Value.Beatmap.Id;
+            beatmap.SetidSpriteText.Text = "Setid: " + OsuBaseAddressesBindable.Value.Beatmap.SetId;
             beatmap.MapstringSpriteText.Text = "Mapstring: " + OsuBaseAddressesBindable.Value.Beatmap.MapString;
             beatmap.FoldernameSpriteText.Text = "Foldername: " + OsuBaseAddressesBindable.Value.Beatmap.FolderName;
             beatmap.OsufilenameSpriteText.Text = "Osufilename: " + OsuBaseAddressesBindable.Value.Beatmap.OsuFileName;
@@ -181,6 +179,18 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
             player.MaxComboSpriteText.Text = "MaxCombo: " + OsuBaseAddressesBindable.Value.Player.MaxCombo;
             player.ScoreSpriteText.Text = "Score: " + OsuBaseAddressesBindable.Value.Player.Score;
             player.ComboSpriteText.Text = "Combo: " + OsuBaseAddressesBindable.Value.Player.Combo;
+            player.Hit50SpriteText.Text = "Hit50: " + OsuBaseAddressesBindable.Value.Player.Hit50;
+            player.Hit100SpriteText.Text = "Hit100: " + OsuBaseAddressesBindable.Value.Player.Hit100;
+            player.Hit300SpriteText.Text = "Hit300: " + OsuBaseAddressesBindable.Value.Player.Hit300;
+            player.HitErrorsSpriteText.Text = "HitErros: " + OsuBaseAddressesBindable.Value.Player.HitErrors;
+            player.HitMissSpriteText.Text = "HitMiss: " + OsuBaseAddressesBindable.Value.Player.HitMiss;
+            player.HitKatuSpriteText.Text = "HitKatu: " + OsuBaseAddressesBindable.Value.Player.HitKatu;
+            player.HitGekiSpriteText.Text = "HitGeki: " + OsuBaseAddressesBindable.Value.Player.HitGeki;
+            player.IsReplaySpriteText.Text = "IsReplay: " + OsuBaseAddressesBindable.Value.Player.IsReplay;
+            player.ModeSpriteText.Text = "Mode: " + OsuBaseAddressesBindable.Value.Player.Mode;
+            player.ModsSpriteText.Text = "Mods: " + OsuBaseAddressesBindable.Value.Player.Mods.Value;
+            player.ScoreV2SpriteText.Text = "ScoreV2: " + OsuBaseAddressesBindable.Value.Player.ScoreV2;
+            player.UsernameSpriteText.Text = "Username: " + OsuBaseAddressesBindable.Value.Player.Username;
 
             resultsScreen.UsernameSpriteText.Text = "Username: " + OsuBaseAddressesBindable.Value.ResultsScreen.Username;
             resultsScreen.MaxComboSpriteText.Text = "MaxCombo: " + OsuBaseAddressesBindable.Value.ResultsScreen.MaxCombo;
@@ -192,14 +202,17 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
             resultsScreen.HitGekiSpriteText.Text = "HitGeki: " + OsuBaseAddressesBindable.Value.ResultsScreen.HitGeki;
             resultsScreen.HitKatuSpriteText.Text = "HitKatu: " + OsuBaseAddressesBindable.Value.ResultsScreen.HitKatu;
             resultsScreen.HitMissSpriteText.Text = "HitMiss: " + OsuBaseAddressesBindable.Value.ResultsScreen.HitMiss;
-
-
+            resultsScreen.ScoreV2SpriteText.Text = "ScoreV2: " + OsuBaseAddressesBindable.Value.ResultsScreen.ScoreV2;
+            resultsScreen.ModsSpriteText.Text = "Mods: " + OsuBaseAddressesBindable.Value.ResultsScreen.Mods.Value;
+            resultsScreen.ModeSpriteText.Text = "Mode: " + OsuBaseAddressesBindable.Value.ResultsScreen.Mode;
 
             skin.FolderSpriteText.Text = "Folder: " + OsuBaseAddressesBindable.Value.Skin.Folder;
 
             songSelectionScores.RankingTypeSpriteText.Text = "RankingType: " + OsuBaseAddressesBindable.Value.SongSelectionScores.RankingType;
             songSelectionScores.TotalScoresSpriteText.Text = "TotalScores: " + OsuBaseAddressesBindable.Value.SongSelectionScores.TotalScores;
             songSelectionScores.AmountOfScoresSpriteText.Text = "AmountOfScores: " + OsuBaseAddressesBindable.Value.SongSelectionScores.AmountOfScores;
+            songSelectionScores.MainPlayerScoreSpriteText.Text = "MainPlayerScore: " + OsuBaseAddressesBindable.Value.SongSelectionScores.MainPlayerScore;
+            songSelectionScores.ScoresSpriteText.Text = "Scores: " + OsuBaseAddressesBindable.Value.SongSelectionScores.Scores;
 
         }
 
@@ -215,9 +228,8 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
         {
             base.LoadComplete();
             OsuBaseAddressesBindable.BindValueChanged(change => updateText(), true);
-           // OsuBaseAddressesBindable.ValueChanged += chane => textFlowContainer.Text = chane.NewValue.ToString();
-            
-            
+           
+
         }
 
     }

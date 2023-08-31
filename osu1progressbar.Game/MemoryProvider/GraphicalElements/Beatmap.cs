@@ -45,6 +45,7 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
         private int offset = 0;
         private int offsetdistance = 15;
 
+        public SpriteText IdSpriteText { get; set; }
         public SpriteText SetidSpriteText { get;  set; }
         public SpriteText MapstringSpriteText { get; set; }
         public SpriteText FoldernameSpriteText { get; set; } //localliszed?
@@ -78,7 +79,11 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                         RelativeSizeAxes = Axes.Both,
                         
                     },
-                    new SpriteText { Text = "Beatmap:", Colour = Color4.Goldenrod },
+                    new SpriteText
+                    {
+                        Text = "Beatmap:",
+                        Colour = Color4.Goldenrod
+                    },
                     SetidSpriteText = new SpriteText
                     {
                     Y = offset += offsetdistance,
@@ -87,6 +92,8 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                     Font = FontUsage.Default.With(size: 20),
                     Text = "Setid: "
                     },
+                     IdSpriteText = new SpriteText { Text = "Id: ", Y = offset += offsetdistance,
+                     },
                     MapstringSpriteText = new SpriteText
                     {
                         Y = offset += offsetdistance, Text = "MapString: ",

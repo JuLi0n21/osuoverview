@@ -17,28 +17,26 @@ using OsuMemoryDataProvider;
 using OsuMemoryDataProvider.OsuMemoryModels;
 using osuTK.Graphics;
 
-/*  "SongSelectionScores": {
-    "RankingType": 0,
-    "TotalScores": 0,
-    "MainPlayerScore": null,
-    "AmountOfScores": null,
-    "Scores": []
+/*   "Skin": {
+    "Folder": "Badeu 2018-09-05"
+  },
 */
 
 //AUTO GENERATED WITH CHAT GPT!!!
 namespace osu1progressbar.Game.MemoryProvider.Elements
 {
-    partial class SongSelectionScores: CompositeDrawable
+    partial class Skin: CompositeDrawable
     {
-        public SpriteText RankingTypeSpriteText { get; private set; }
-        public SpriteText TotalScoresSpriteText { get; private set; }
-        public SpriteText AmountOfScoresSpriteText { get; private set; }
+        public SpriteText FolderSpriteText { get; private set; }
+
+        private Box box;
 
         private int offset = 0;
         private int offsetdistance = 15;
 
-        public SongSelectionScores()
+        public Skin()
         {
+             
         }
 
         [BackgroundDependencyLoader]
@@ -52,32 +50,41 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                 Masking = true,
                 Children = new Drawable[]
                 {
-                new Box
+                box = new Box
                 {
                     Colour = Color4.SteelBlue,
                     RelativeSizeAxes = Axes.Both,
                 },
-                new SpriteText { Text = "SongSelectionScores:", Colour = Color4.Goldenrod },
-                RankingTypeSpriteText = new SpriteText
+                new SpriteText { Text = "Skin:", Colour = Color4.Goldenrod },
+                FolderSpriteText = new SpriteText
                 {
                     Y = offset += offsetdistance,
                     Anchor = Anchor.TopLeft,
                     Origin = Anchor.TopLeft,
                     Font = FontUsage.Default.With(size: 20),
-                    Text = "RankingType: "
-                },
-                TotalScoresSpriteText = new SpriteText
-                {
-                    Y = offset += offsetdistance,
-                    Text = "TotalScores: ",
-                },
-                AmountOfScoresSpriteText = new SpriteText
-                {
-                    Y = offset += offsetdistance,
-                    Text = "AmountOfScores: ",
+                    Text = "Folder: "
                 },
                 }
             };
+        }
+
+        protected override void LoadComplete()
+        {
+            base.LoadComplete();
+           // box.Colour = Color4.White;
+
+        }
+
+        protected override bool OnHover(HoverEvent e)
+        {
+            box.Colour = Color4.Green;  
+            return base.OnHover(e);
+        }
+
+        protected override void OnHoverLost(HoverLostEvent e)
+        {
+            box.Colour = Color4.Red;
+            base.OnHoverLost(e);
         }
     }
 

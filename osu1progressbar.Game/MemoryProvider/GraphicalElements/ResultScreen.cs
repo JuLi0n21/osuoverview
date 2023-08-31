@@ -45,7 +45,10 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
     {
         public SpriteText UsernameSpriteText { get; private set; }
         public SpriteText MaxComboSpriteText { get; private set; }
+        public SpriteText ModsSpriteText { get; private set; }
+        public SpriteText ModeSpriteText { get; private set; }
         public SpriteText ScoreSpriteText { get; private set; }
+        public SpriteText ScoreV2SpriteText { get; private set; }
         public SpriteText ComboSpriteText { get; private set; }
         public SpriteText Hit100SpriteText { get; private set; }
         public SpriteText Hit300SpriteText { get; private set; }
@@ -96,10 +99,25 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                     Y = offset += offsetdistance,
                     Text = "Score: ",
                 },
+                ScoreV2SpriteText = new SpriteText
+                {
+                    Y = offset += offsetdistance,
+                    Text = "ScoreV2: ",
+                },
                 ComboSpriteText = new SpriteText
                 {
                     Y = offset += offsetdistance,
                     Text = "Combo: ",
+                },
+                ModsSpriteText = new SpriteText
+                {
+                    Y = offset += offsetdistance,
+                    Text = "Mods: ",
+                },
+                ModeSpriteText = new SpriteText
+                {
+                    Y = offset += offsetdistance,
+                    Text = "Mode: ",
                 },
                 Hit100SpriteText = new SpriteText
                 {
