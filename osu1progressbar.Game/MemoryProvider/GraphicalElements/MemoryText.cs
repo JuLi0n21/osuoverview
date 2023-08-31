@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using osu.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.ObjectExtensions;
@@ -22,7 +23,7 @@ using osuTK.Platform.Egl;
 using Veldrid;
 using static System.Net.Mime.MediaTypeNames;
 
-
+//better name needed 4sho
 namespace osu1progressbar.Game.MemoryProvider.Elements
 {
 
@@ -55,27 +56,34 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
             memoryProvider.ReadDelay = 1;
             OsuBaseAddressesBindable = memoryProvider.OsuBaseAddressesBindable;
             RelativeSizeAxes = Axes.Both;
+            //AutoSizeAxes = Axes.Both;
             Origin = Anchor.Centre;
             // Masking = true;
 
             InternalChild = box = new Container
             {
-                AutoSizeAxes = Axes.Both,
+               // AutoSizeAxes = Axes.Both,
                 Anchor = Anchor.TopLeft,
                 Origin = Anchor.TopLeft,
+                RelativeSizeAxes = Axes.Both,
                 //Masking = true,
                 Children = new Drawable[]
                 {
+                    new Box
+                    {
+                        Colour = Color4.Wheat,
+                        RelativeSizeAxes = Axes.Both,
+                    },
                     beatmap = new Beatmap()
                     {
-                        Y = 500,
+                        Y = 600,
                       Anchor = Anchor.TopLeft,
                       Origin = Anchor.TopLeft,
                     },
 
                     banchoUser = new BanchoUser()
                     {
-                        Y = 0,
+                        Y = 650,
                         X = 1000,
                         Anchor = Anchor.TopLeft,
                         Origin = Anchor.TopLeft,
@@ -112,7 +120,7 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                         Origin = Anchor.TopLeft,
                     },
                     skin    = new Skin() {
-                         X = 300,
+                         X = 550,
                          Y = 250,
                         Anchor = Anchor.TopLeft,
                         Origin = Anchor.TopLeft,
@@ -228,9 +236,7 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
         {
             base.LoadComplete();
             OsuBaseAddressesBindable.BindValueChanged(change => updateText(), true);
-           
 
         }
-
     }
 }

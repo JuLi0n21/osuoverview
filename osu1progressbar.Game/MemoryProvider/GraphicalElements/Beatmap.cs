@@ -41,6 +41,8 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
         private Container dragContainer;
         private Container beatmapContainer;
 
+        public Box box;
+
 
         private int offset = 0;
         private int offsetdistance = 15;
@@ -73,7 +75,7 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                 Masking = true,
                 Children = new Drawable[]
                 {
-                    new Box
+                    box = new Box
                     {
                         Colour = Color4.SteelBlue,
                         RelativeSizeAxes = Axes.Both,

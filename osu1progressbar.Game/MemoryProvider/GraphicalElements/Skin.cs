@@ -29,7 +29,7 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
     {
         public SpriteText FolderSpriteText { get; private set; }
 
-        private Box box;
+        public Box Box;
 
         private int offset = 0;
         private int offsetdistance = 15;
@@ -45,12 +45,13 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
             InternalChild = new Container
             {
                 AutoSizeAxes = Axes.Both,
+                //RelativeSizeAxes = Axes.Both,
                 Anchor = Anchor.TopLeft,
                 Origin = Anchor.TopLeft,
                 Masking = true,
                 Children = new Drawable[]
                 {
-                box = new Box
+                Box = new Box
                 {
                     Colour = Color4.SteelBlue,
                     RelativeSizeAxes = Axes.Both,
@@ -75,15 +76,16 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
 
         }
 
+        //something something with the axes maybe idk not sure why not workies
         protected override bool OnHover(HoverEvent e)
         {
-            box.Colour = Color4.Green;  
+            Box.Colour = Color4.Green;  
             return base.OnHover(e);
         }
 
         protected override void OnHoverLost(HoverLostEvent e)
         {
-            box.Colour = Color4.Red;
+            Box.Colour = Color4.Red;
             base.OnHoverLost(e);
         }
     }
