@@ -7,10 +7,9 @@ using JetBrains.Annotations;
 
 namespace osu1progressbar.Game.Database
 {
-    internal class DatabaseController
+    public class DatabaseController
     {
         public DatabaseController() {
-
 
         }
 

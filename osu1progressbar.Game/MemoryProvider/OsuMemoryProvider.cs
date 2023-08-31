@@ -20,7 +20,7 @@ using OsuMemoryDataProvider.OsuMemoryModels.Direct;
 
 namespace osu1progressbar.Game.MemoryProvider
 {
-    internal class OsuMemoryProvider
+    public class OsuMemoryProvider
     {
         private readonly string _osuWindowTitle;
         public int ReadDelay { get; set; } = 200;
@@ -40,7 +40,7 @@ namespace osu1progressbar.Game.MemoryProvider
             _sreader = StructuredOsuMemoryReader.Instance.GetInstanceForWindowTitleHint(osuWindowTitle);
             baseAddresses = new OsuBaseAddresses();
             OsuBaseAddressesBindable = new Bindable<OsuBaseAddresses>(baseAddresses);
-            Logger.Log("Starting OsuMemoryProvider...");   
+            Logger.Log("Instancated OsuMemoryProvider...");   
         }
 
 
@@ -79,11 +79,11 @@ namespace osu1progressbar.Game.MemoryProvider
 
         public async void Run()
         {
-
+            Logger.Log("OsuMemoryProvider Run call...");
             _sreader.InvalidRead += SreaderOnInvalidRead;
             await Task.Run(async () =>
             {
-                Logger.Log("Starting memoryReader");
+                //Logger.Log("Starting memoryReader");
                 Stopwatch stopwatch;
                 double readTimeMs, readTimeMsMin, readTimeMsMax;
                 _sreader.WithTimes = true;
@@ -177,13 +177,17 @@ namespace osu1progressbar.Game.MemoryProvider
                     }
 
                     OsuBaseAddressesBindable.TriggerChange();
-                    Logger.Log(JsonConvert.SerializeObject(baseAddresses, Formatting.Indented));
+                    //Logger.Log(JsonConvert.SerializeObject(baseAddresses, Formatting.Indented),LoggingTarget.Information,LogLevel.Debug);
                     _sreader.ReadTimes.Clear();
                     await Task.Delay(ReadDelay);
                 }
             }, cts.Token);
         }
 
+        public void Stop()
+        {
+            cts.Cancel(); 
+        }
         private void SreaderOnInvalidRead(object sender, (object readObject, string propPath) e)
         {
             try

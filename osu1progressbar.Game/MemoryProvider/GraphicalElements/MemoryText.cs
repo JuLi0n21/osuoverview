@@ -16,6 +16,7 @@ using osu.Framework.Input.Events;
 using osu.Framework.Localisation;
 using osu.Framework.Logging;
 using osu.Game.Resources;
+using osu1progressbar.Game.Logicstuff;
 using OsuMemoryDataProvider.OsuMemoryModels;
 using OsuMemoryDataProvider.OsuMemoryModels.Direct;
 using osuTK.Graphics;
@@ -32,6 +33,8 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
         private Container box;
         private OsuMemoryProvider memoryProvider;
         Bindable<OsuBaseAddresses> OsuBaseAddressesBindable;
+
+        private LogicController logic;
 
         private SpriteText memoryText;
         private Beatmap beatmap;
@@ -52,6 +55,7 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
 
         public MemoryText()
         {
+            logic = new LogicController();  
             memoryProvider = new OsuMemoryProvider("osu!");
             memoryProvider.ReadDelay = 1;
             OsuBaseAddressesBindable = memoryProvider.OsuBaseAddressesBindable;
@@ -121,7 +125,7 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
                     },
                     skin    = new Skin() {
                          X = 550,
-                         Y = 250,
+                         Y = 450,
                         Anchor = Anchor.TopLeft,
                         Origin = Anchor.TopLeft,
                     },
@@ -216,12 +220,20 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
 
             skin.FolderSpriteText.Text = "Folder: " + OsuBaseAddressesBindable.Value.Skin.Folder;
 
+            leaderBoard.HasLeaderBoardSpriteText.Text = "HasLeaderBoard: " + OsuBaseAddressesBindable.Value.LeaderBoard.HasLeaderBoard;
+            leaderBoard.MainPlayerSpriteText.Text = "MainPlayer: " + OsuBaseAddressesBindable.Value.LeaderBoard.MainPlayer;
+            leaderBoard.AmountOfPlayersSpriteText.Text = "AmountOfPlayers: " + OsuBaseAddressesBindable.Value.LeaderBoard.AmountOfPlayers;
+
             songSelectionScores.RankingTypeSpriteText.Text = "RankingType: " + OsuBaseAddressesBindable.Value.SongSelectionScores.RankingType;
             songSelectionScores.TotalScoresSpriteText.Text = "TotalScores: " + OsuBaseAddressesBindable.Value.SongSelectionScores.TotalScores;
             songSelectionScores.AmountOfScoresSpriteText.Text = "AmountOfScores: " + OsuBaseAddressesBindable.Value.SongSelectionScores.AmountOfScores;
             songSelectionScores.MainPlayerScoreSpriteText.Text = "MainPlayerScore: " + OsuBaseAddressesBindable.Value.SongSelectionScores.MainPlayerScore;
             songSelectionScores.ScoresSpriteText.Text = "Scores: " + OsuBaseAddressesBindable.Value.SongSelectionScores.Scores;
 
+        }
+
+        private void updateGameLogic(OsuBaseAddresses newValue) {
+            logic.Logiccheck(newValue);
         }
 
         [BackgroundDependencyLoader]
@@ -236,6 +248,7 @@ namespace osu1progressbar.Game.MemoryProvider.Elements
         {
             base.LoadComplete();
             OsuBaseAddressesBindable.BindValueChanged(change => updateText(), true);
+            OsuBaseAddressesBindable.BindValueChanged(change => updateGameLogic(change.NewValue), true);
 
         }
     }
