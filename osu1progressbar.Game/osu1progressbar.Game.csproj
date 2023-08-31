@@ -9,5 +9,7 @@
     <PackageReference Include="OsuMemoryDataProvider" Version="0.10.0" />
     <PackageReference Include="ppy.osu.Framework" Version="2023.823.0" />
     <PackageReference Include="ppy.osu.Game.Resources" Version="2023.822.0" />
+    <PackageReference Include="SQLite" Version="3.13.0" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
   </ItemGroup>
 </Project>

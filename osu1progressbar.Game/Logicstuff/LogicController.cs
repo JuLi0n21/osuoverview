@@ -23,6 +23,9 @@ namespace osu1progressbar.Game.Logicstuff
         private Stopwatch userTimeStopWatch;
         public LogicController()
         {
+            db = new DatabaseController();
+            db.Init();
+
             screenTimeStopWatch = new Stopwatch();
             screenTimeStopWatch.Start();
 
@@ -41,7 +44,7 @@ namespace osu1progressbar.Game.Logicstuff
                 Logger.Log("Song Failed detected");
                 Logger.Log(NewValues.Beatmap.ToJson().ToString());
                 Logger.Log(NewValues.Player.ToJson().ToString());
-
+                db.InsertScore(NewValues);
             }
 
             if (CurrentScreen == "Playing" && NewValues.GeneralData.OsuStatus.ToString() == "ResultsScreen")
@@ -49,6 +52,7 @@ namespace osu1progressbar.Game.Logicstuff
                 Logger.Log("Song Passed detected");
                 Logger.Log(NewValues.Beatmap.ToJson().ToString());
                 Logger.Log(NewValues.Player.ToJson().ToString());
+                db.InsertScore(NewValues);
 
             }
 
