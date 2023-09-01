@@ -2,6 +2,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
+using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Screens;
 using osu1progressbar.Game.MemoryProvider.Elements;
 using osuTK.Graphics;
@@ -32,7 +33,7 @@ namespace osu1progressbar.Game
                 {
                     Anchor = Anchor.TopCentre,
                     Origin = Anchor.TopCentre,
-                }
+                },
             };
         }
     }

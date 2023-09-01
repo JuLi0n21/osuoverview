@@ -18,6 +18,8 @@ using OsuMemoryDataProvider.OsuMemoryModels.Abstract;
 using OsuMemoryDataProvider.OsuMemoryModels.Direct;
 
 
+//make it slow down when osu! not found so it can easily run in the background wihtouht wasting much cpu cycles
+
 namespace osu1progressbar.Game.MemoryProvider
 {
     public class OsuMemoryProvider

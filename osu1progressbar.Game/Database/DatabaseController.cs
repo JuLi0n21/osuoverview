@@ -8,7 +8,14 @@ using System.Data.SQLite;
 using osu.Framework.Logging;
 using Markdig.Extensions.Tables;
 using OsuMemoryDataProvider.OsuMemoryModels;
+using NuGet.Protocol.Plugins;
+using System.ComponentModel.Design;
+using osu.Framework.Graphics.UserInterface;
 
+
+//Add proper debug messages and levels...
+//make it possible to retrive data 1. prepared stuff like, betweewn dates and or costuem request as a bonus maybe...
+//refactor sometime to make it proper data types instead of text, maybe....
 namespace osu1progressbar.Game.Database
 {
     public class DatabaseController
@@ -35,7 +42,7 @@ namespace osu1progressbar.Game.Database
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(e.ToString());
+                    Logger.Log(e.ToString(), LoggingTarget.Database);
                     return false;
                 }
                 finally
@@ -47,23 +54,6 @@ namespace osu1progressbar.Game.Database
                 return true;
             }
 
-        }
-
-        public bool SaveScore()
-        {
-            //saving a score and specific hit events, consider calling everytime user stops playing a map 
-            return true;
-        }
-
-        public bool LoadScore()
-        {
-            // for datavisulisation idk maybe
-            return true;
-        }
-
-        public void Updateplaytimes()
-        {
-            //updaste times user spend in a specific mode based on RawStatus or OsuStatus. 
         }
 
         private void createTables(SQLiteConnection connection)
@@ -99,10 +89,17 @@ namespace osu1progressbar.Game.Database
                 command.ExecuteNonQuery();
             }
 
-            Logger.Log("Database Created: " + dbname);
+            Logger.Log("Database Created: " + dbname, LoggingTarget.Database);
 
+            //think should be the times be based hourly or dayli?
+            //how many rows of data is accpetable for this? needs test data 
             string timeSpendTableQuery = @"
-                CREATE TABLE IF NOT EXISTS ";
+                CREATE TABLE IF NOT EXISTS TimeWasted (Date TEXT ,RawStatus INTEGER, Time REAL)";
+
+            using (var command = new SQLiteCommand(timeSpendTableQuery, connection))
+            {
+                command.ExecuteNonQuery();
+            }
 
             string query = "SELECT name FROM sqlite_master WHERE type='table';";
             using (var command = new SQLiteCommand(query, connection))
@@ -111,12 +108,61 @@ namespace osu1progressbar.Game.Database
                 while (reader.Read())
                 {
                     string tableName = reader.GetString(0);
-                    Logger.Log(tableName);
+                    Logger.Log(tableName, LoggingTarget.Database);
                 }
             }
 
         }
 
+        public void UpdateTimeWasted(OsuBaseAddresses baseAddresses, float timeElapsed) {
+            DateTime time = DateTime.UtcNow;
+            string date = time.Year + "-" + time.Month + "-" + time.Day + "-" + time.Hour;
+            //Logger.Log(time.Hour.ToString(), LoggingTarget.Database);
+
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+
+                    connection.Open();
+                 
+                    using (SQLiteCommand command = new SQLiteCommand(connection)) {
+
+                        command.CommandText = @"
+                        Update TimeWasted Set Time = Time + @timeElapsed WHERE Date = @Date AND RawStatus = @RawStatus";
+                        command.Parameters.AddWithValue("@timeElapsed", timeElapsed);
+                        command.Parameters.AddWithValue("@Date", date);
+                        command.Parameters.AddWithValue("@RawStatus", baseAddresses.GeneralData.RawStatus);
+
+                    int rowsUpdated = command.ExecuteNonQuery();
+
+                        if (rowsUpdated == 0) {
+                            using (SQLiteCommand insertCommand = new SQLiteCommand(connection))
+                            {
+
+                                insertCommand.CommandText = @"
+                                INSERT INTO TimeWasted (Date ,RawStatus, Time
+                                    ) VALUES (
+                                        @Date, @RawStatus, @Time
+                                    );
+                                ";
+    
+                                insertCommand.Parameters.AddWithValue("@Date", date);
+                                insertCommand.Parameters.AddWithValue("@RawStatus", baseAddresses.GeneralData.RawStatus);
+                                insertCommand.Parameters.AddWithValue("@Time", timeElapsed);
+
+                                insertCommand.ExecuteNonQuery();
+                                Logger.Log("New TimeWasted Added for this hour", LoggingTarget.Database);
+                            }
+                        } else
+                        {
+                            Logger.Log("Updated TimeWasted in: " + baseAddresses.GeneralData.RawStatus + " time: " + timeElapsed, LoggingTarget.Database);
+                        }
+                    }
+       
+                connection.Close();
+            }
+        }
+
+        //maybe consider passed or failed/canceld
         public void InsertScore(OsuBaseAddresses baseAddresses)
         {
 
@@ -170,7 +216,7 @@ namespace osu1progressbar.Game.Database
                     ";
 
                     float ur = 100; // calculate ur here.
-
+                    //add DATE IMPORTANT POSSIBLY ALSO RETRY COUNT
                     using (var command = new SQLiteCommand(insertQuery, connection))
                     {
                         command.Parameters.AddWithValue("@BeatmapSetid", baseAddresses.Beatmap.SetId);
@@ -191,17 +237,17 @@ namespace osu1progressbar.Game.Database
                         command.Parameters.AddWithValue("@Ur", ur.ToString());
                         command.Parameters.AddWithValue("@HitMiss", baseAddresses.Player.HitMiss);
                         command.Parameters.AddWithValue("@Mode", baseAddresses.Player.Mode);
-                        command.Parameters.AddWithValue("@Mods", baseAddresses.Player.Mods);
+                        command.Parameters.AddWithValue("@Mods", baseAddresses.Player.Mods.Value);
 
                         command.ExecuteNonQuery();
                     }
 
-                    Logger.Log("Saved Score: ");
+                    Logger.Log("Saved Score: ", LoggingTarget.Database,LogLevel.Debug);
 
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(e.ToString());
+                    Logger.Log(e.ToString(),LoggingTarget.Database);
 
                 }
                 finally
@@ -212,5 +258,44 @@ namespace osu1progressbar.Game.Database
 
         }
 
+        public List<string> GetScores(DateTime from, DateTime to)
+        {
+            List<string> scores = new List<string>();
+
+            using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+            {
+
+                using (var command = new SQLiteCommand(connection))
+                {
+
+                    connection.Open();
+                    //date is stroed as YYYY-MM-DD-HH -> turn into math somewhow and calculate if bettwen something
+                    //uhhh change this sometimes no workies
+                    command.CommandText = "SELECT * FROM TimeWasted WHERE datetime(Date, '%Y%m%d%H') BETWEEN @from AND @to;";
+
+                    Logger.Log(from + " " + to);
+
+                    command.Parameters.AddWithValue("@from", from.ToString());
+                    command.Parameters.AddWithValue("@to", to.ToString());
+
+
+                    using (SQLiteDataReader reader = command.ExecuteReader())
+                    {
+
+                        Logger.Log(reader.HasRows.ToString());
+
+                        while (reader.Read())
+                        {
+                            string tableName = reader.GetString(0);
+                            Logger.Log(tableName, LoggingTarget.Database);
+                        }
+                    }
+
+                    connection.Close();
+
+                }
+                return scores;
+            }
+        }
     }
 }
