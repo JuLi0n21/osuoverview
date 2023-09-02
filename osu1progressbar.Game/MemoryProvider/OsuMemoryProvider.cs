@@ -24,22 +24,23 @@ namespace osu1progressbar.Game.MemoryProvider
 {
     public class OsuMemoryProvider
     {
-        private readonly string _osuWindowTitle;
+        private readonly string osuWindowTitle;
         public int ReadDelay { get; set; } = 200;
-        private readonly object _minMaxLock = new object();
-        private double _memoryReadTimeMin = double.PositiveInfinity;
-        private double _memoryReadTimeMax = double.NegativeInfinity;
+        private readonly object minMaxLock = new object();
+        private readonly int throttledDelay = 1000;
+        private double memoryReadTimeMin = double.PositiveInfinity;
+        private double memoryReadTimeMax = double.NegativeInfinity;
 
         private OsuBaseAddresses baseAddresses;
         public Bindable<OsuBaseAddresses> OsuBaseAddressesBindable { get; }
 
 
-        private readonly StructuredOsuMemoryReader _sreader;
+        private readonly StructuredOsuMemoryReader sreader;
         private CancellationTokenSource cts = new CancellationTokenSource();
 
         public OsuMemoryProvider(string osuWindowTitle)
         {
-            _sreader = StructuredOsuMemoryReader.Instance.GetInstanceForWindowTitleHint(osuWindowTitle);
+            sreader = StructuredOsuMemoryReader.Instance.GetInstanceForWindowTitleHint(osuWindowTitle);
             baseAddresses = new OsuBaseAddresses();
             OsuBaseAddressesBindable = new Bindable<OsuBaseAddresses>(baseAddresses);
             Logger.Log("Instancated OsuMemoryProvider...");   
@@ -54,7 +55,7 @@ namespace osu1progressbar.Game.MemoryProvider
         //HELPER FUMCTIONS COPIED FROM StructuredOsuMemoryProviderTester 
         private T ReadProperty<T>(object readObj, string propName, T defaultValue = default) where T : struct
         {
-            if (_sreader.TryReadProperty(readObj, propName, out var readResult))
+            if (sreader.TryReadProperty(readObj, propName, out var readResult))
                 return (T)readResult;
 
             return defaultValue;
@@ -62,7 +63,7 @@ namespace osu1progressbar.Game.MemoryProvider
 
         private T ReadClassProperty<T>(object readObj, string propName, T defaultValue = default) where T : class
         {
-            if (_sreader.TryReadProperty(readObj, propName, out var readResult))
+            if (sreader.TryReadProperty(readObj, propName, out var readResult))
                 return (T)readResult;
 
             return defaultValue;
@@ -82,13 +83,13 @@ namespace osu1progressbar.Game.MemoryProvider
         public async void Run()
         {
             Logger.Log("OsuMemoryProvider Run call...");
-            _sreader.InvalidRead += SreaderOnInvalidRead;
+            sreader.InvalidRead += SreaderOnInvalidRead;
             await Task.Run(async () =>
             {
                 //Logger.Log("Starting memoryReader");
                 Stopwatch stopwatch;
                 double readTimeMs, readTimeMsMin, readTimeMsMax;
-                _sreader.WithTimes = true;
+                sreader.WithTimes = true;
                 var readUsingProperty = false;
                 //var baseAddresses = new OsuBaseAddresses();
                 while (true)
@@ -96,10 +97,11 @@ namespace osu1progressbar.Game.MemoryProvider
                    
                     if (cts.IsCancellationRequested) return;
 
-                    if (!_sreader.CanRead)
+                    if (!sreader.CanRead)
                     {
 
                         Logger.Log("osu! process not found");
+                        //ReadDelay = throttledDelay;
                         await Task.Delay(ReadDelay);
                         continue;
                     }
@@ -128,30 +130,30 @@ namespace osu1progressbar.Game.MemoryProvider
                     }
                     else
                     {
-                        _sreader.TryRead(OsuBaseAddressesBindable.Value.Beatmap);
-                        _sreader.TryRead(OsuBaseAddressesBindable.Value.Skin);
-                        _sreader.TryRead(OsuBaseAddressesBindable.Value.GeneralData);
-                        _sreader.TryRead(OsuBaseAddressesBindable.Value.BanchoUser);
+                        sreader.TryRead(OsuBaseAddressesBindable.Value.Beatmap);
+                        sreader.TryRead(OsuBaseAddressesBindable.Value.Skin);
+                        sreader.TryRead(OsuBaseAddressesBindable.Value.GeneralData);
+                        sreader.TryRead(OsuBaseAddressesBindable.Value.BanchoUser);
                     }
 
                     if (OsuBaseAddressesBindable.Value.GeneralData.OsuStatus == OsuMemoryStatus.SongSelect)
-                        _sreader.TryRead(OsuBaseAddressesBindable.Value.SongSelectionScores);
+                        sreader.TryRead(OsuBaseAddressesBindable.Value.SongSelectionScores);
                     else
                         OsuBaseAddressesBindable.Value.SongSelectionScores.Scores.Clear();
 
                     if (OsuBaseAddressesBindable.Value.GeneralData.OsuStatus == OsuMemoryStatus.ResultsScreen)
-                        _sreader.TryRead(OsuBaseAddressesBindable.Value.ResultsScreen);
+                        sreader.TryRead(OsuBaseAddressesBindable.Value.ResultsScreen);
 
                     if (OsuBaseAddressesBindable.Value.GeneralData.OsuStatus == OsuMemoryStatus.Playing)
                     {
-                        _sreader.TryRead(OsuBaseAddressesBindable.Value.Player);
+                        sreader.TryRead(OsuBaseAddressesBindable.Value.Player);
                         //TODO: flag needed for single/multi player detection (should be read once per play in singleplayer)
-                        _sreader.TryRead(OsuBaseAddressesBindable.Value.LeaderBoard);
-                        _sreader.TryRead(OsuBaseAddressesBindable.Value.KeyOverlay);
+                        sreader.TryRead(OsuBaseAddressesBindable.Value.LeaderBoard);
+                        sreader.TryRead(OsuBaseAddressesBindable.Value.KeyOverlay);
                         if (readUsingProperty)
                         {
                             //Testing reading of reference types(other than string)
-                            _sreader.TryReadProperty(OsuBaseAddressesBindable.Value.Player, nameof(Player.Mods), out var dummyResult);
+                            sreader.TryReadProperty(OsuBaseAddressesBindable.Value.Player, nameof(Player.Mods), out var dummyResult);
                         }
                     }
                     else
@@ -169,18 +171,18 @@ namespace osu1progressbar.Game.MemoryProvider
 
                     stopwatch.Stop();
                     readTimeMs = stopwatch.ElapsedTicks / (double)TimeSpan.TicksPerMillisecond;
-                    lock (_minMaxLock)
+                    lock (minMaxLock)
                     {
-                        if (readTimeMs < _memoryReadTimeMin) _memoryReadTimeMin = readTimeMs;
-                        if (readTimeMs > _memoryReadTimeMax) _memoryReadTimeMax = readTimeMs;
+                        if (readTimeMs < memoryReadTimeMin) memoryReadTimeMin = readTimeMs;
+                        if (readTimeMs > memoryReadTimeMax) memoryReadTimeMax = readTimeMs;
                         // copy value since we're inside lock
-                        readTimeMsMin = _memoryReadTimeMin;
-                        readTimeMsMax = _memoryReadTimeMax;
+                        readTimeMsMin = memoryReadTimeMin;
+                        readTimeMsMax = memoryReadTimeMax;
                     }
 
                     OsuBaseAddressesBindable.TriggerChange();
                     //Logger.Log(JsonConvert.SerializeObject(baseAddresses, Formatting.Indented),LoggingTarget.Information,LogLevel.Debug);
-                    _sreader.ReadTimes.Clear();
+                    sreader.ReadTimes.Clear();
                     await Task.Delay(ReadDelay);
                 }
             }, cts.Token);
@@ -204,7 +206,7 @@ namespace osu1progressbar.Game.MemoryProvider
 
         public string GetAllDataJson()
         {
-            if(!_sreader.CanRead) return "Osu not Found!";
+            if(!sreader.CanRead) return "Osu not Found!";
 
             return JsonConvert.SerializeObject(baseAddresses, Formatting.Indented);
         }

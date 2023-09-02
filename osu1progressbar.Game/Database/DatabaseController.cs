@@ -11,6 +11,8 @@ using OsuMemoryDataProvider.OsuMemoryModels;
 using NuGet.Protocol.Plugins;
 using System.ComponentModel.Design;
 using osu.Framework.Graphics.UserInterface;
+using HidSharp.Reports;
+using NUnit.Framework.Constraints;
 
 
 //Add proper debug messages and levels...
@@ -62,6 +64,7 @@ namespace osu1progressbar.Game.Database
             //Hiterros should be recalculated into UR
             string createScoreTableQuery = @"
                 CREATE TABLE IF NOT EXISTS ScoreData (
+                    Date TEXT,
                     BeatmapSetid TEXT,
                     Beatmapid TEXT,
                     Osufilename TEXT,
@@ -114,10 +117,11 @@ namespace osu1progressbar.Game.Database
 
         }
 
-        public void UpdateTimeWasted(OsuBaseAddresses baseAddresses, float timeElapsed) {
+        public void UpdateTimeWasted(int OldStatus, float timeElapsed) {
             DateTime time = DateTime.UtcNow;
-            string date = time.Year + "-" + time.Month + "-" + time.Day + "-" + time.Hour;
-            //Logger.Log(time.Hour.ToString(), LoggingTarget.Database);
+            string date = time.ToString("yyyy-MM-dd HH:00");
+
+            Logger.Log(date, LoggingTarget.Database);
 
             using (var connection = new SQLiteConnection(connectionString))
             {
@@ -130,9 +134,11 @@ namespace osu1progressbar.Game.Database
                         Update TimeWasted Set Time = Time + @timeElapsed WHERE Date = @Date AND RawStatus = @RawStatus";
                         command.Parameters.AddWithValue("@timeElapsed", timeElapsed);
                         command.Parameters.AddWithValue("@Date", date);
-                        command.Parameters.AddWithValue("@RawStatus", baseAddresses.GeneralData.RawStatus);
+                        command.Parameters.AddWithValue("@RawStatus", OldStatus);
 
                     int rowsUpdated = command.ExecuteNonQuery();
+
+                    //Update score if already exist
 
                         if (rowsUpdated == 0) {
                             using (SQLiteCommand insertCommand = new SQLiteCommand(connection))
@@ -146,7 +152,7 @@ namespace osu1progressbar.Game.Database
                                 ";
     
                                 insertCommand.Parameters.AddWithValue("@Date", date);
-                                insertCommand.Parameters.AddWithValue("@RawStatus", baseAddresses.GeneralData.RawStatus);
+                                insertCommand.Parameters.AddWithValue("@RawStatus", OldStatus);
                                 insertCommand.Parameters.AddWithValue("@Time", timeElapsed);
 
                                 insertCommand.ExecuteNonQuery();
@@ -154,7 +160,7 @@ namespace osu1progressbar.Game.Database
                             }
                         } else
                         {
-                            Logger.Log("Updated TimeWasted in: " + baseAddresses.GeneralData.RawStatus + " time: " + timeElapsed, LoggingTarget.Database);
+                            Logger.Log("Updated TimeWasted in: " + OldStatus + " time: " + timeElapsed, LoggingTarget.Database);
                         }
                     }
        
@@ -173,7 +179,9 @@ namespace osu1progressbar.Game.Database
                     connection.Open();
 
                     string insertQuery = @"
-                    INSERT INTO ScoreData ( BeatmapSetid,
+                    INSERT INTO ScoreData (
+                    Date,
+                    BeatmapSetid,
                     Beatmapid,
                     Osufilename,
                     Ar,
@@ -193,6 +201,7 @@ namespace osu1progressbar.Game.Database
                     Mode,
                     Mods
                     ) VALUES (
+                            @Date,
                             @BeatmapSetid,
                             @Beatmapid,
                             @Osufilename,
@@ -215,10 +224,22 @@ namespace osu1progressbar.Game.Database
                         );
                     ";
 
-                    float ur = 100; // calculate ur here.
-                    //add DATE IMPORTANT POSSIBLY ALSO RETRY COUNT
+                    DateTime dateTime = DateTime.Now;
+                    float ur = 0; // calculate ur here.
+                    int urcount = 0;
+
+                    baseAddresses.Player.HitErrors.ForEach(error =>
+                    {
+                        ur += error;
+                        urcount++;
+                    });
+
+                    Logger.Log(((ur / urcount) * 100).ToString());
+
+                    //YYYY-MM-DD HH:MM THIS FORMAT IS SUPPOSED TO BE USED 
                     using (var command = new SQLiteCommand(insertQuery, connection))
                     {
+                        command.Parameters.AddWithValue("@Date", dateTime.ToString("yyyy-MM-dd HH:mm") );
                         command.Parameters.AddWithValue("@BeatmapSetid", baseAddresses.Beatmap.SetId);
                         command.Parameters.AddWithValue("@Beatmapid", baseAddresses.Beatmap.Id);
                         command.Parameters.AddWithValue("@Osufilename", baseAddresses.Beatmap.OsuFileName);
@@ -244,14 +265,14 @@ namespace osu1progressbar.Game.Database
 
                     Logger.Log("Saved Score: ", LoggingTarget.Database,LogLevel.Debug);
 
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e.ToString(),LoggingTarget.Database);
+                  }
+                  catch (Exception e)
+                  {
+                      Logger.Log(e.ToString(),LoggingTarget.Database);
 
-                }
-                finally
-                {
+                  }
+                  finally
+                  {
                     connection.Close();
                 }
             }
@@ -260,6 +281,8 @@ namespace osu1progressbar.Game.Database
 
         public List<string> GetScores(DateTime from, DateTime to)
         {
+            string fromFormatted = from.ToString("yyyy-MM-dd HH:mm:ss");
+            string toFormatted = to.ToString("yyyy-MM-dd HH:mm:ss");
             List<string> scores = new List<string>();
 
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
@@ -269,27 +292,42 @@ namespace osu1progressbar.Game.Database
                 {
 
                     connection.Open();
-                    //date is stroed as YYYY-MM-DD-HH -> turn into math somewhow and calculate if bettwen something
-                    //uhhh change this sometimes no workies
-                    command.CommandText = "SELECT * FROM TimeWasted WHERE datetime(Date, '%Y%m%d%H') BETWEEN @from AND @to;";
+                    //command.CommandText = "SELECT Date FROM TimeWasted";
+                    //command.CommandText = "SELECT  datetime(Date, '%Y-%m-%d %H:%M') AS Date FROM TimeWasted ";
+                    //command.CommandText = " SELECT datetime(Date) AS FormattedDate FROM TimeWasted";
 
-                    Logger.Log(from + " " + to);
+                    command.CommandText = "SELECT * FROM ScoreData WHERE datetime(Date) BETWEEN @from AND @to;";
+                    //command.CommandText = "SELECT Date FROM ScoreData";
+                    //command.CommandText = "SELECT strftime('%Y-%m-%d-%H-',Date) AS parsedDate, RawStatus, Time  FROM TimeWasted;";
 
-                    command.Parameters.AddWithValue("@from", from.ToString());
-                    command.Parameters.AddWithValue("@to", to.ToString());
+                    Logger.Log(fromFormatted + " " + toFormatted);
 
+                    command.Parameters.AddWithValue("@from", fromFormatted);
+                    command.Parameters.AddWithValue("@to", toFormatted);
+
+                    DateTime dateString = DateTime.Now; 
 
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
+                        
 
-                        Logger.Log(reader.HasRows.ToString());
+                        Logger.Log(reader.HasRows.ToString(), LoggingTarget.Database);
 
-                        while (reader.Read())
-                        {
-                            string tableName = reader.GetString(0);
-                            Logger.Log(tableName, LoggingTarget.Database);
-                        }
+                        //change to datatype maybe?
+
+                        string score = "";
+
+                            while (reader.Read())
+                            {
+                                Logger.Log(reader.GetDateTime(0).ToString(), LoggingTarget.Database);
+                                for(int i=0; i < reader.FieldCount; i++) {
+                                    score = score + " " + reader[i].ToString();
+                                }
+                            scores.Add(score);
+                            }
+
                     }
+
 
                     connection.Close();
 

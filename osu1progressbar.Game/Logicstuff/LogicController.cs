@@ -12,6 +12,8 @@ using osu1progressbar.Game.Database;
 using osu1progressbar.Game.MemoryProvider;
 using OsuMemoryDataProvider.OsuMemoryModels;
 
+
+//add retry detection and save scroe
 namespace osu1progressbar.Game.Logicstuff
 {
     public class LogicController
@@ -19,6 +21,7 @@ namespace osu1progressbar.Game.Logicstuff
         private DatabaseController db;
 
         string CurrentScreen = null;
+        int oldRawStatus = -1;
         string BanchoUserStatus = null;
 
         private Stopwatch screenTimeStopWatch;
@@ -47,16 +50,16 @@ namespace osu1progressbar.Game.Logicstuff
             if (CurrentScreen == "Playing" && NewValues.GeneralData.OsuStatus.ToString() == "SongSelect")
             {
                 Logger.Log("Song Failed detected");
-                Logger.Log(NewValues.Beatmap.ToJson().ToString());
-                Logger.Log(NewValues.Player.ToJson().ToString());
+               // Logger.Log(NewValues.Beatmap.ToJson().ToString());
+                //Logger.Log(NewValues.Player.ToJson().ToString());
                 db.InsertScore(NewValues);
             }
 
             if (CurrentScreen == "Playing" && NewValues.GeneralData.OsuStatus.ToString() == "ResultsScreen")
             {
                 Logger.Log("Song Passed detected");
-                Logger.Log(NewValues.Beatmap.ToJson().ToString());
-                Logger.Log(NewValues.Player.ToJson().ToString());
+               // Logger.Log(NewValues.Beatmap.ToJson().ToString());
+               // Logger.Log(NewValues.Player.ToJson().ToString());
                 db.InsertScore(NewValues);
 
             }
@@ -65,7 +68,8 @@ namespace osu1progressbar.Game.Logicstuff
             {
                 Logger.Log("Spend: " + (DateTime.Now + " :" + screenTimeStopWatch.ElapsedMilliseconds) + "ms in: " + CurrentScreen);
                 //     Logger.Log("Spend: " + (System.DateTime.Now + " :" + screenTimeStopWatch.ElapsedMilliseconds / 1000) + "s in: " + CurrentScreen
-                db.UpdateTimeWasted(NewValues, screenTimeStopWatch.ElapsedMilliseconds);
+                // pass old value not new one
+                db.UpdateTimeWasted(oldRawStatus, screenTimeStopWatch.ElapsedMilliseconds);
                 screenTimeStopWatch.Restart();
             }
 
@@ -83,15 +87,16 @@ namespace osu1progressbar.Game.Logicstuff
 
             CurrentScreen = NewValues.GeneralData.OsuStatus.ToString();
             BanchoUserStatus = NewValues.BanchoUser.BanchoStatus.ToString();
-
-            
+            oldRawStatus = NewValues.GeneralData.RawStatus;
 
                 if (stopwatch.ElapsedMilliseconds > 1000)
                 {
                     DateTime from = DateTime.Now;
-                    from.AddDays(-2);
+                   from = from.Subtract(TimeSpan.FromDays(2));
                     DateTime to = DateTime.Now;
-                    db.GetScores(from, to).ForEach(score =>
+                   //  Logger.Log(from.ToString("yyyy-MM-dd HH:mm"));
+                   //  Logger.Log(to.ToString("yyyy-MM-dd HH:mm"));
+                   db.GetScores(from, to).ForEach(score =>
                     {
                         Logger.Log(score.ToJson().ToString());
                     });
